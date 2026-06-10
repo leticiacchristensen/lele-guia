@@ -25,23 +25,36 @@ export default function SobrePage() {
           <div className="relative aspect-[3/4] rounded-2xl overflow-hidden"
             style={{ background: 'var(--cream-dark)' }}>
             <Image src="/foto-leticia.jpg" alt="Lelê" fill className="object-cover" />
-            {/* Círculo decorativo */}
             <div className="absolute -bottom-5 -left-5 w-20 h-20 rounded-full opacity-70"
               style={{ background: 'var(--terra)' }} />
           </div>
 
-          <div className="pt-4">
-            <p className="text-sm leading-relaxed mb-4" style={{ color: 'var(--muted)' }}>
-              Este é o meu espaço para registrar os restaurantes que visito e compartilhar
-              com quem me pede dicas. Aqui você encontra minha avaliação honesta de cada lugar —
-              com tipo de culinária, faixa de preço e onde fica.
+          <div className="pt-2 space-y-4">
+            <p className="text-sm leading-relaxed" style={{ color: 'var(--muted)' }}>
+              Eu sou a Letícia Christensen, engenheira de formação e cozinheira por paixão.
+              Me formei no Centro Europeu como chefe gourmet e já fiz vários cursos pelo mundo:
+              bao, sushi e cozinha japonesa, parrilla, carnes na Argentina, empanadas e outros.
             </p>
-            <p className="text-sm leading-relaxed mb-6" style={{ color: 'var(--muted)' }}>
-              Explore à vontade, e se você também conhece algum lugar da lista, deixa sua avaliação!
+            <p className="text-sm leading-relaxed" style={{ color: 'var(--muted)' }}>
+              Amo aprender e experimentar novas culinárias. Sou a pessoa que viaja para comer,
+              conhece novos restaurantes e volta com cardápios e livros de cozinha na mala.
             </p>
-            <div className="inline-block px-4 py-2 rounded-full text-sm font-medium"
-              style={{ background: 'var(--cream-dark)', border: '1px solid var(--border)', color: 'var(--terra)' }}>
-              leticiacchristensen@gmail.com
+            <p className="text-sm leading-relaxed" style={{ color: 'var(--muted)' }}>
+              E ah — sou também a amiga que recebe os pedidos de indicação de restaurante.
+              Por isso resolvi criar um compilado aqui. Que tal?
+            </p>
+
+            <div className="pt-2 space-y-2">
+              <a href="https://instagram.com/lele.cozinha" target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-70"
+                style={{ color: 'var(--terra)' }}>
+                <span>↗</span> @lele.cozinha
+              </a>
+              <a href="https://instagram.com/leticiachristensen" target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-70"
+                style={{ color: 'var(--terra)' }}>
+                <span>↗</span> @leticiachristensen
+              </a>
             </div>
           </div>
         </div>
