@@ -27,15 +27,12 @@ export default async function HomePage() {
         </div>
 
         <div className="relative max-w-5xl mx-auto px-5 sm:px-8 py-20 sm:py-28">
-          <p className="text-xs font-medium uppercase tracking-widest mb-4" style={{ color: 'var(--mustard)' }}>
-            por Lelê
-          </p>
           <h1 className="font-display font-semibold leading-none text-white" style={{ fontSize: 'clamp(3.5rem, 10vw, 7rem)' }}>
-            Lelê<br />
-            <em style={{ color: 'var(--terra)' }}>Guia</em>
+            Lugares que<br />
+            <em style={{ color: 'var(--terra)' }}>valem a pena</em>
           </h1>
           <p className="mt-6 text-base" style={{ color: 'rgba(255,255,255,0.55)', maxWidth: '38ch' }}>
-            {list.length} restaurantes visitados e avaliados com carinho.
+            {list.length} restaurantes visitados e avaliados por Lelê.
           </p>
         </div>
       </div>
