@@ -6,6 +6,7 @@ import type { Restaurant, RestaurantPhoto } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import StarRating from './StarRating'
 import PhotoManager from './PhotoManager'
+import TagSelector from './TagSelector'
 
 type Props = { restaurants: Restaurant[] }
 
@@ -67,6 +68,7 @@ export default function AdminRestaurantList({ restaurants }: Props) {
       my_rating: editing.my_rating,
       my_review: editing.my_review,
       photo_url,
+      tags: editing.tags ?? [],
     }).eq('id', editing.id)
     setSaving(false)
     setEditing(null)
@@ -170,6 +172,11 @@ export default function AdminRestaurantList({ restaurants }: Props) {
                 <textarea value={editing.my_review} onChange={e => setEditing({ ...editing, my_review: e.target.value })}
                   rows={4} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none resize-none"
                   style={{ border: '1px solid var(--border)', background: 'var(--cream-dark)' }} />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium uppercase tracking-wide mb-2" style={{ color: 'var(--muted)' }}>Tags</label>
+                <TagSelector selected={editing.tags ?? []} onChange={v => setEditing({ ...editing, tags: v })} />
               </div>
 
               <PhotoManager

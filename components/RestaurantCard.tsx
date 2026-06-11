@@ -70,6 +70,17 @@ export default function RestaurantCard({ restaurant }: Props) {
           )}
         </div>
 
+        {restaurant.tags?.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1">
+            {restaurant.tags.map(t => (
+              <span key={t} className="text-xs px-2 py-0.5 rounded-full"
+                style={{ background: 'var(--cream)', border: '1px solid var(--border)', color: 'var(--muted)' }}>
+                {t}
+              </span>
+            ))}
+          </div>
+        )}
+
         <div className="mt-3 flex items-center justify-between">
           <Stars value={restaurant.my_rating} />
           <span className="text-xs" style={{ color: 'var(--muted)' }}>{priceLabel[restaurant.price_range]}</span>

@@ -32,6 +32,7 @@ export type Restaurant = {
   my_rating: number
   my_review: string
   photo_url: string | null
+  tags: string[]
   created_at: string
 }
 

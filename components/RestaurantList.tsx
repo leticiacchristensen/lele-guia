@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import type { Restaurant } from '@/lib/supabase'
 import RestaurantCard from './RestaurantCard'
+import { ALL_TAGS } from './TagSelector'
 
 type Props = {
   restaurants: Restaurant[]
@@ -44,6 +45,7 @@ export default function RestaurantList({ restaurants, cuisines, neighborhoods }:
   const [neighborhood, setNeighborhood] = useState<string | null>(null)
   const [price, setPrice] = useState<string | null>(null)
   const [minRating, setMinRating] = useState<number>(0)
+  const [tag, setTag] = useState<string | null>(null)
   const [sort, setSort] = useState<SortKey>('recent')
 
   const filtered = useMemo(() => {
@@ -53,6 +55,7 @@ export default function RestaurantList({ restaurants, cuisines, neighborhoods }:
       if (neighborhood && r.neighborhood !== neighborhood) return false
       if (price && r.price_range !== price) return false
       if (minRating && r.my_rating < minRating) return false
+      if (tag && !(r.tags ?? []).includes(tag)) return false
       return true
     })
     return [...list].sort((a, b) => {
@@ -64,7 +67,7 @@ export default function RestaurantList({ restaurants, cuisines, neighborhoods }:
     })
   }, [restaurants, search, cuisine, neighborhood, price, minRating, sort])
 
-  const hasFilters = !!(cuisine || neighborhood || price || minRating)
+  const hasFilters = !!(cuisine || neighborhood || price || minRating || tag)
 
   return (
     <div>
@@ -116,6 +119,13 @@ export default function RestaurantList({ restaurants, cuisines, neighborhoods }:
         </div>
       )}
 
+      {/* Tags */}
+      <div className="flex flex-wrap gap-2 mb-3">
+        {ALL_TAGS.map((t) => (
+          <FilterChip key={t} label={t} active={tag === t} onClick={() => setTag(tag === t ? null : t)} />
+        ))}
+      </div>
+
       {/* Preço e nota */}
       <div className="flex flex-wrap items-center gap-2 mb-8">
         {['$', '$$', '$$$', '$$$$'].map((p) => (
@@ -138,7 +148,7 @@ export default function RestaurantList({ restaurants, cuisines, neighborhoods }:
         ))}
         {hasFilters && (
           <button
-            onClick={() => { setCuisine(null); setNeighborhood(null); setPrice(null); setMinRating(0) }}
+            onClick={() => { setCuisine(null); setNeighborhood(null); setPrice(null); setMinRating(0); setTag(null) }}
             className="text-xs ml-1 underline underline-offset-2"
             style={{ color: 'var(--muted)' }}
           >

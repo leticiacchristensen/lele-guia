@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import StarRating from './StarRating'
+import TagSelector from './TagSelector'
 import { useRouter } from 'next/navigation'
 
 const CUISINES = [
@@ -18,6 +19,7 @@ export default function AddRestaurantForm() {
     name: '', cuisine: '', neighborhood: '', address: '', price_range: '$$',
     price_note: '', my_rating: 0, my_review: '',
   })
+  const [tags, setTags] = useState<string[]>([])
   const [photo, setPhoto] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -49,12 +51,14 @@ export default function AddRestaurantForm() {
       neighborhood: form.neighborhood || null,
       price_note: form.price_note || null,
       photo_url,
+      tags,
     })
 
     if (insertError) {
       setError('Erro ao salvar. Verifique se você está logado como admin.')
     } else {
       setForm({ name: '', cuisine: '', neighborhood: '', address: '', price_range: '$$', price_note: '', my_rating: 0, my_review: '' })
+      setTags([])
       setPhoto(null)
       router.refresh()
     }
@@ -143,6 +147,11 @@ export default function AddRestaurantForm() {
           rows={4} placeholder="Escreva sua avaliação..."
           className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-200 resize-none"
         />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-stone-700 mb-2">Tags</label>
+        <TagSelector selected={tags} onChange={setTags} />
       </div>
 
       <div>
