@@ -19,6 +19,7 @@ export default function AdminRestaurantList({ restaurants }: Props) {
   const [deleting, setDeleting] = useState<string | null>(null)
   const [editing, setEditing] = useState<Restaurant | null>(null)
   const [saving, setSaving] = useState(false)
+  const [newPhoto, setNewPhoto] = useState<File | null>(null)
 
   const handleDelete = async (id: string) => {
     if (!confirm('Excluir este restaurante?')) return
@@ -31,6 +32,20 @@ export default function AdminRestaurantList({ restaurants }: Props) {
   const handleSave = async () => {
     if (!editing) return
     setSaving(true)
+
+    let photo_url = editing.photo_url
+    if (newPhoto) {
+      const ext = newPhoto.name.split('.').pop()
+      const path = `${Date.now()}.${ext}`
+      const { error: uploadError } = await supabase.storage
+        .from('restaurant-photos')
+        .upload(path, newPhoto)
+      if (!uploadError) {
+        const { data } = supabase.storage.from('restaurant-photos').getPublicUrl(path)
+        photo_url = data.publicUrl
+      }
+    }
+
     await supabase.from('restaurants').update({
       name: editing.name,
       cuisine: editing.cuisine,
@@ -40,9 +55,11 @@ export default function AdminRestaurantList({ restaurants }: Props) {
       price_note: editing.price_note,
       my_rating: editing.my_rating,
       my_review: editing.my_review,
+      photo_url,
     }).eq('id', editing.id)
     setSaving(false)
     setEditing(null)
+    setNewPhoto(null)
     router.refresh()
   }
 
@@ -142,6 +159,17 @@ export default function AdminRestaurantList({ restaurants }: Props) {
                 <textarea value={editing.my_review} onChange={e => setEditing({ ...editing, my_review: e.target.value })}
                   rows={4} className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none resize-none"
                   style={{ border: '1px solid var(--border)', background: 'var(--cream-dark)' }} />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium uppercase tracking-wide mb-1" style={{ color: 'var(--muted)' }}>Foto</label>
+                {editing.photo_url && !newPhoto && (
+                  <img src={editing.photo_url} alt="Foto atual" className="w-24 h-24 object-cover rounded-lg mb-2" />
+                )}
+                <input type="file" accept="image/*"
+                  onChange={e => setNewPhoto(e.target.files?.[0] ?? null)}
+                  className="text-sm" style={{ color: 'var(--muted)' }} />
+                {newPhoto && <p className="text-xs mt-1" style={{ color: 'var(--terra)' }}>Nova foto selecionada: {newPhoto.name}</p>}
               </div>
 
               <button onClick={handleSave} disabled={saving}
