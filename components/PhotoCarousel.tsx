@@ -28,26 +28,47 @@ export default function PhotoCarousel({ photos, name }: Props) {
         priority
       />
 
+      {/* Setas sempre visíveis quando há mais de 1 foto */}
       {photos.length > 1 && (
         <>
           <button onClick={prev}
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center transition-opacity hover:opacity-80"
-            style={{ background: 'rgba(0,0,0,0.4)', color: '#fff' }}>
+            className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center transition-all hover:scale-110 active:scale-95"
+            style={{
+              width: 40, height: 40, borderRadius: '50%',
+              background: 'rgba(255,255,255,0.85)',
+              color: 'var(--ink)',
+              fontSize: 22,
+              fontWeight: 600,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+            }}>
             ‹
           </button>
           <button onClick={next}
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center transition-opacity hover:opacity-80"
-            style={{ background: 'rgba(0,0,0,0.4)', color: '#fff' }}>
+            className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center transition-all hover:scale-110 active:scale-95"
+            style={{
+              width: 40, height: 40, borderRadius: '50%',
+              background: 'rgba(255,255,255,0.85)',
+              color: 'var(--ink)',
+              fontSize: 22,
+              fontWeight: 600,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+            }}>
             ›
           </button>
 
-          {/* Dots */}
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-            {photos.map((_, i) => (
-              <button key={i} onClick={() => setCurrent(i)}
-                className="w-1.5 h-1.5 rounded-full transition-all"
-                style={{ background: i === current ? '#fff' : 'rgba(255,255,255,0.4)' }} />
-            ))}
+          {/* Contador e dots */}
+          <div className="absolute bottom-3 left-0 right-0 flex flex-col items-center gap-1.5">
+            <div className="flex gap-1.5">
+              {photos.map((_, i) => (
+                <button key={i} onClick={() => setCurrent(i)}
+                  className="rounded-full transition-all"
+                  style={{
+                    width: i === current ? 16 : 6,
+                    height: 6,
+                    background: i === current ? '#fff' : 'rgba(255,255,255,0.5)',
+                  }} />
+              ))}
+            </div>
           </div>
         </>
       )}
