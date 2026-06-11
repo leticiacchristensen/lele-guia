@@ -26,12 +26,12 @@ export default async function HomePage() {
           <div className="absolute rounded-full opacity-30" style={{ width: 160, height: 160, background: 'var(--mustard)', top: 20, left: 200 }} />
         </div>
 
-        <div className="relative max-w-5xl mx-auto px-5 sm:px-8 py-20 sm:py-28">
-          <h1 className="font-display font-semibold leading-none text-white" style={{ fontSize: 'clamp(3.5rem, 10vw, 7rem)' }}>
+        <div className="relative max-w-5xl mx-auto px-5 sm:px-8 py-10 sm:py-14">
+          <h1 className="font-display font-semibold leading-none text-white" style={{ fontSize: 'clamp(2.5rem, 7vw, 5rem)' }}>
             Lugares que<br />
             <em style={{ color: 'var(--terra)' }}>valem a pena</em>
           </h1>
-          <p className="mt-6 text-base" style={{ color: 'rgba(255,255,255,0.55)', maxWidth: '38ch' }}>
+          <p className="mt-4 text-sm" style={{ color: 'rgba(255,255,255,0.55)', maxWidth: '38ch' }}>
             {list.length} restaurantes visitados e avaliados por Lelê.
           </p>
         </div>

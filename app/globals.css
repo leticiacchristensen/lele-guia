@@ -2,14 +2,14 @@
 @import "tailwindcss";
 
 :root {
-  --cream: #FAF6EE;
-  --cream-dark: #F0E9DC;
-  --terra: #C84B2F;
-  --terra-dark: #A33A20;
-  --mustard: #C4882A;
-  --ink: #1E1612;
-  --muted: #7A6A5E;
-  --border: #DDD3C4;
+  --cream: #F5EFE4;
+  --cream-dark: #EDE3D3;
+  --terra: #C13A1E;
+  --terra-dark: #9E2E14;
+  --mustard: #B87A18;
+  --ink: #1A100A;
+  --muted: #5C4A3A;
+  --border: #CFC0AC;
 }
 
 body {
