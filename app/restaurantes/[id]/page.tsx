@@ -1,9 +1,10 @@
 import { supabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
-import Image from 'next/image'
 import Link from 'next/link'
 import StarRating from '@/components/StarRating'
 import ReviewSection from '@/components/ReviewSection'
+import PhotoCarousel from '@/components/PhotoCarousel'
+import type { RestaurantPhoto } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
 
@@ -21,8 +22,10 @@ export default async function RestaurantPage({ params }: Props) {
 
   if (!restaurant) notFound()
 
-  const { data: reviews } = await supabase
-    .from('reviews').select('*').eq('restaurant_id', id).order('created_at', { ascending: false })
+  const [{ data: reviews }, { data: photos }] = await Promise.all([
+    supabase.from('reviews').select('*').eq('restaurant_id', id).order('created_at', { ascending: false }),
+    supabase.from('restaurant_photos').select('*').eq('restaurant_id', id).order('position'),
+  ])
 
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.address)}`
 
@@ -33,12 +36,7 @@ export default async function RestaurantPage({ params }: Props) {
         ← Todos os restaurantes
       </Link>
 
-      {restaurant.photo_url && (
-        <div className="relative w-full aspect-[16/7] rounded-2xl overflow-hidden mb-8"
-          style={{ background: 'var(--cream-dark)' }}>
-          <Image src={restaurant.photo_url} alt={restaurant.name} fill className="object-cover" priority />
-        </div>
-      )}
+      <PhotoCarousel photos={(photos ?? []) as RestaurantPhoto[]} name={restaurant.name} />
 
       <div className="mb-8">
         <div className="flex items-start justify-between gap-4">
@@ -59,7 +57,6 @@ export default async function RestaurantPage({ params }: Props) {
         </div>
       </div>
 
-      {/* Avaliação da Lelê */}
       <div className="rounded-2xl p-6 mb-6" style={{ background: 'var(--cream-dark)', border: '1px solid var(--border)' }}>
         <div className="flex items-center gap-3 mb-3">
           <span className="font-display italic text-sm" style={{ color: 'var(--terra)' }}>avaliação da Lelê</span>

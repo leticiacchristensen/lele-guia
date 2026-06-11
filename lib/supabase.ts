@@ -35,6 +35,14 @@ export type Restaurant = {
   created_at: string
 }
 
+export type RestaurantPhoto = {
+  id: string
+  restaurant_id: string
+  url: string
+  position: number
+  created_at: string
+}
+
 export type Review = {
   id: string
   restaurant_id: string

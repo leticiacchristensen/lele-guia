@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import type { Restaurant } from '@/lib/supabase'
+import type { Restaurant, RestaurantPhoto } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import StarRating from './StarRating'
+import PhotoManager from './PhotoManager'
 
 type Props = { restaurants: Restaurant[] }
 
@@ -20,6 +21,16 @@ export default function AdminRestaurantList({ restaurants }: Props) {
   const [editing, setEditing] = useState<Restaurant | null>(null)
   const [saving, setSaving] = useState(false)
   const [newPhoto, setNewPhoto] = useState<File | null>(null)
+  const [photos, setPhotos] = useState<Record<string, RestaurantPhoto[]>>({})
+
+  useEffect(() => {
+    if (!editing) return
+    supabase.from('restaurant_photos').select('*')
+      .eq('restaurant_id', editing.id).order('position')
+      .then(({ data }) => {
+        if (data) setPhotos(prev => ({ ...prev, [editing.id]: data as RestaurantPhoto[] }))
+      })
+  }, [editing?.id])
 
   const handleDelete = async (id: string) => {
     if (!confirm('Excluir este restaurante?')) return
@@ -161,16 +172,11 @@ export default function AdminRestaurantList({ restaurants }: Props) {
                   style={{ border: '1px solid var(--border)', background: 'var(--cream-dark)' }} />
               </div>
 
-              <div>
-                <label className="block text-xs font-medium uppercase tracking-wide mb-1" style={{ color: 'var(--muted)' }}>Foto</label>
-                {editing.photo_url && !newPhoto && (
-                  <img src={editing.photo_url} alt="Foto atual" className="w-24 h-24 object-cover rounded-lg mb-2" />
-                )}
-                <input type="file" accept="image/*"
-                  onChange={e => setNewPhoto(e.target.files?.[0] ?? null)}
-                  className="text-sm" style={{ color: 'var(--muted)' }} />
-                {newPhoto && <p className="text-xs mt-1" style={{ color: 'var(--terra)' }}>Nova foto selecionada: {newPhoto.name}</p>}
-              </div>
+              <PhotoManager
+                restaurantId={editing.id}
+                photos={photos[editing.id] ?? []}
+                onUpdate={(updated) => setPhotos(prev => ({ ...prev, [editing.id]: updated }))}
+              />
 
               <button onClick={handleSave} disabled={saving}
                 className="px-5 py-2 rounded-full text-sm font-medium transition-opacity disabled:opacity-40"
