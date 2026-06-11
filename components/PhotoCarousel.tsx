@@ -18,7 +18,7 @@ export default function PhotoCarousel({ photos, name }: Props) {
   const next = () => setCurrent((c) => (c + 1) % photos.length)
 
   return (
-    <div className="relative w-full aspect-[16/7] rounded-2xl overflow-hidden mb-8"
+    <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden mb-8"
       style={{ background: 'var(--cream-dark)' }}>
       <Image
         src={photos[current].url}
