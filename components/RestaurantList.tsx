@@ -97,9 +97,10 @@ export default function RestaurantList({ restaurants, cuisines, neighborhoods, p
         </select>
       </div>
 
-      {/* Filtros — scroll horizontal no mobile */}
+      {/* Filtros — scroll horizontal no mobile, sangrando até a borda */}
       <div className="mb-8 pb-6" style={{ borderBottom: '1px solid var(--border)' }}>
-        <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-5 px-5 sm:mx-0 sm:px-0 sm:flex-wrap"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
           {cuisines.length > 0 && (
             <select value={cuisine} onChange={(e) => setCuisine(e.target.value)} style={{ ...activeSelectStyle(!!cuisine), flexShrink: 0 }}>
               <option value="">Culinária</option>
