@@ -98,7 +98,10 @@ export default function RestaurantList({ restaurants, cuisines, neighborhoods, p
       </div>
 
       {/* Filtros — scroll horizontal no mobile, sangrando até a borda */}
-      <div className="mb-8 pb-6" style={{ borderBottom: '1px solid var(--border)' }}>
+      <div className="mb-8 pb-6 relative" style={{ borderBottom: '1px solid var(--border)' }}>
+        {/* Fade na borda direita indicando que dá pra rolar (só mobile) */}
+        <div className="sm:hidden absolute right-0 top-0 bottom-1 w-12 pointer-events-none z-10 -mr-5"
+          style={{ background: 'linear-gradient(to right, transparent, var(--cream))' }} />
         <div className="flex gap-2 overflow-x-auto pb-1 -mx-5 px-5 sm:mx-0 sm:px-0 sm:flex-wrap"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
           {cuisines.length > 0 && (
