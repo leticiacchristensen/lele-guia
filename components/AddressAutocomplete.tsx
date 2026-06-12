@@ -24,8 +24,30 @@ declare global {
   interface Window {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     google: any
-    _mapsCallback?: () => void
   }
+}
+
+function loadGoogleMaps(apiKey: string): Promise<void> {
+  if (window.google?.maps?.places) return Promise.resolve()
+  if (document.getElementById('google-maps-script')) {
+    // Script already added, wait for it
+    return new Promise((resolve) => {
+      const interval = setInterval(() => {
+        if (window.google?.maps?.places) {
+          clearInterval(interval)
+          resolve()
+        }
+      }, 100)
+    })
+  }
+  return new Promise((resolve) => {
+    const script = document.createElement('script')
+    script.id = 'google-maps-script'
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`
+    script.async = true
+    script.onload = () => resolve()
+    document.head.appendChild(script)
+  })
 }
 
 export default function AddressAutocomplete({
@@ -34,14 +56,15 @@ export default function AddressAutocomplete({
   const inputRef = useRef<HTMLInputElement>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const autocompleteRef = useRef<any>(null)
+  const onPlaceSelectRef = useRef(onPlaceSelect)
+  onPlaceSelectRef.current = onPlaceSelect
 
   useEffect(() => {
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY
-    if (!apiKey) return
+    if (!apiKey || !inputRef.current) return
 
-    const init = () => {
-      if (!inputRef.current || !window.google?.maps?.places) return
-      if (autocompleteRef.current) return
+    loadGoogleMaps(apiKey).then(() => {
+      if (!inputRef.current || autocompleteRef.current) return
 
       autocompleteRef.current = new window.google.maps.places.Autocomplete(inputRef.current, {
         types: ['establishment'],
@@ -60,7 +83,7 @@ export default function AddressAutocomplete({
           comps.find((c: { types: string[]; long_name: string }) => c.types.includes('sublocality'))?.long_name ||
           ''
 
-        onPlaceSelect({
+        onPlaceSelectRef.current({
           name: place.name ?? '',
           address: place.formatted_address ?? '',
           neighborhood,
@@ -69,21 +92,14 @@ export default function AddressAutocomplete({
           lng: place.geometry?.location?.lng() ?? null,
         })
       })
-    }
+    })
 
-    if (window.google?.maps?.places) {
-      init()
-    } else {
-      window._mapsCallback = init
-      if (!document.getElementById('google-maps-script')) {
-        const s = document.createElement('script')
-        s.id = 'google-maps-script'
-        s.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=_mapsCallback`
-        s.async = true
-        document.head.appendChild(s)
+    return () => {
+      if (autocompleteRef.current && window.google?.maps?.event) {
+        window.google.maps.event.clearInstanceListeners(autocompleteRef.current)
+        autocompleteRef.current = null
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
