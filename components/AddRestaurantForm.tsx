@@ -4,28 +4,42 @@ import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import StarRating from './StarRating'
 import TagSelector from './TagSelector'
+import AddressAutocomplete from './AddressAutocomplete'
+import type { PlaceResult } from './AddressAutocomplete'
 import { useRouter } from 'next/navigation'
 
 const CUISINES = [
   'Italiana', 'Japonesa', 'Brasileira', 'Francesa', 'Mexicana',
   'Árabe', 'Indiana', 'Contemporânea', 'Frutos do Mar', 'Churrasco', 'Outro',
 ]
-
 const PRICES = ['$', '$$', '$$$', '$$$$']
 
 export default function AddRestaurantForm() {
   const router = useRouter()
   const [form, setForm] = useState({
-    name: '', cuisine: '', neighborhood: '', address: '', price_range: '$$',
-    price_note: '', my_rating: 0, my_review: '',
+    name: '', cuisine: '', neighborhood: '', address: '',
+    price_range: '$$', price_note: '', my_rating: 0, my_review: '',
+    place_id: '' as string | null, lat: null as number | null, lng: null as number | null,
   })
   const [tags, setTags] = useState<string[]>([])
   const [photo, setPhoto] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const set = (field: string, value: string | number) =>
+  const set = (field: string, value: string | number | null) =>
     setForm((f) => ({ ...f, [field]: value }))
+
+  const handlePlaceSelect = (place: PlaceResult) => {
+    setForm((f) => ({
+      ...f,
+      name: f.name || place.name,
+      address: place.address,
+      neighborhood: place.neighborhood || f.neighborhood,
+      place_id: place.place_id,
+      lat: place.lat,
+      lng: place.lng,
+    }))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -38,8 +52,7 @@ export default function AddRestaurantForm() {
       const ext = photo.name.split('.').pop()
       const path = `${Date.now()}.${ext}`
       const { error: uploadError } = await supabase.storage
-        .from('restaurant-photos')
-        .upload(path, photo)
+        .from('restaurant-photos').upload(path, photo)
       if (!uploadError) {
         const { data } = supabase.storage.from('restaurant-photos').getPublicUrl(path)
         photo_url = data.publicUrl
@@ -47,17 +60,25 @@ export default function AddRestaurantForm() {
     }
 
     const { error: insertError } = await supabase.from('restaurants').insert({
-      ...form,
+      name: form.name,
+      cuisine: form.cuisine,
       neighborhood: form.neighborhood || null,
+      address: form.address,
+      price_range: form.price_range,
       price_note: form.price_note || null,
+      my_rating: form.my_rating,
+      my_review: form.my_review,
       photo_url,
       tags,
+      place_id: form.place_id || null,
+      lat: form.lat,
+      lng: form.lng,
     })
 
     if (insertError) {
-      setError('Erro ao salvar. Verifique se você está logado como admin.')
+      setError('Erro ao salvar. Verifique se você está logada como admin.')
     } else {
-      setForm({ name: '', cuisine: '', neighborhood: '', address: '', price_range: '$$', price_note: '', my_rating: 0, my_review: '' })
+      setForm({ name: '', cuisine: '', neighborhood: '', address: '', price_range: '$$', price_note: '', my_rating: 0, my_review: '', place_id: null, lat: null, lng: null })
       setTags([])
       setPhoto(null)
       router.refresh()
@@ -65,45 +86,54 @@ export default function AddRestaurantForm() {
     setLoading(false)
   }
 
+  const inputClass = 'w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-200'
+
   return (
     <form onSubmit={handleSubmit} className="bg-white border border-stone-200 rounded-xl p-6 space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Nome *</label>
-          <input
-            required value={form.name} onChange={(e) => set('name', e.target.value)}
-            className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-200"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Culinária *</label>
-          <select
-            required value={form.cuisine} onChange={(e) => set('cuisine', e.target.value)}
-            className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-200 bg-white"
-          >
-            <option value="">Selecione</option>
-            {CUISINES.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
-        </div>
+
+      {/* Nome do restaurante — com autocomplete Google Places */}
+      <div>
+        <label className="block text-sm font-medium text-stone-700 mb-1">
+          Nome do restaurante *
+          <span className="ml-2 text-xs font-normal text-stone-400">— comece a digitar para buscar no Google</span>
+        </label>
+        <AddressAutocomplete
+          value={form.name}
+          onChange={(v) => set('name', v)}
+          onPlaceSelect={handlePlaceSelect}
+          placeholder="Ex: Outback, Eataly, Dom..."
+          inputClassName={inputClass}
+        />
+        {form.place_id && (
+          <p className="mt-1 text-xs text-green-700 flex items-center gap-1">
+            <svg className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+            </svg>
+            Local encontrado no Google Maps
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Bairro</label>
-          <input
-            value={form.neighborhood} onChange={(e) => set('neighborhood', e.target.value)}
-            placeholder="ex: Batel, Vila Madalena"
-            className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-200"
-          />
+          <label className="block text-sm font-medium text-stone-700 mb-1">Culinária *</label>
+          <select required value={form.cuisine} onChange={(e) => set('cuisine', e.target.value)}
+            className={inputClass + ' bg-white'}>
+            <option value="">Selecione</option>
+            {CUISINES.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Endereço *</label>
-          <input
-            required value={form.address} onChange={(e) => set('address', e.target.value)}
-            placeholder="Rua, número, cidade"
-            className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-200"
-          />
+          <label className="block text-sm font-medium text-stone-700 mb-1">Bairro</label>
+          <input value={form.neighborhood} onChange={(e) => set('neighborhood', e.target.value)}
+            placeholder="Preenchido automaticamente" className={inputClass} />
         </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-stone-700 mb-1">Endereço *</label>
+        <input required value={form.address} onChange={(e) => set('address', e.target.value)}
+          placeholder="Preenchido automaticamente ao selecionar o local" className={inputClass} />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -111,15 +141,12 @@ export default function AddRestaurantForm() {
           <label className="block text-sm font-medium text-stone-700 mb-1">Faixa de preço *</label>
           <div className="flex gap-2">
             {PRICES.map((p) => (
-              <button
-                key={p} type="button"
-                onClick={() => set('price_range', p)}
+              <button key={p} type="button" onClick={() => set('price_range', p)}
                 className={`flex-1 py-2 rounded-lg border text-sm transition-colors ${
                   form.price_range === p
                     ? 'bg-stone-900 text-white border-stone-900'
                     : 'bg-white text-stone-600 border-stone-200 hover:border-stone-400'
-                }`}
-              >
+                }`}>
                 {p}
               </button>
             ))}
@@ -127,11 +154,8 @@ export default function AddRestaurantForm() {
         </div>
         <div>
           <label className="block text-sm font-medium text-stone-700 mb-1">Nota do preço</label>
-          <input
-            value={form.price_note} onChange={(e) => set('price_note', e.target.value)}
-            placeholder="ex: pratos entre R$40–80"
-            className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-200"
-          />
+          <input value={form.price_note} onChange={(e) => set('price_note', e.target.value)}
+            placeholder="ex: pratos entre R$40–80" className={inputClass} />
         </div>
       </div>
 
@@ -142,11 +166,9 @@ export default function AddRestaurantForm() {
 
       <div>
         <label className="block text-sm font-medium text-stone-700 mb-1">Minha avaliação *</label>
-        <textarea
-          required value={form.my_review} onChange={(e) => set('my_review', e.target.value)}
+        <textarea required value={form.my_review} onChange={(e) => set('my_review', e.target.value)}
           rows={4} placeholder="Escreva sua avaliação..."
-          className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-200 resize-none"
-        />
+          className={inputClass + ' resize-none'} />
       </div>
 
       <div>
@@ -156,19 +178,15 @@ export default function AddRestaurantForm() {
 
       <div>
         <label className="block text-sm font-medium text-stone-700 mb-1">Foto</label>
-        <input
-          type="file" accept="image/*"
+        <input type="file" accept="image/*"
           onChange={(e) => setPhoto(e.target.files?.[0] ?? null)}
-          className="text-sm text-stone-600"
-        />
+          className="text-sm text-stone-600" />
       </div>
 
       {error && <p className="text-red-600 text-sm">{error}</p>}
 
-      <button
-        type="submit" disabled={loading}
-        className="px-5 py-2.5 bg-stone-900 text-white text-sm rounded-lg hover:bg-stone-700 disabled:opacity-40 transition-colors"
-      >
+      <button type="submit" disabled={loading}
+        className="px-5 py-2.5 bg-stone-900 text-white text-sm rounded-lg hover:bg-stone-700 disabled:opacity-40 transition-colors">
         {loading ? 'Salvando...' : 'Adicionar restaurante'}
       </button>
     </form>

@@ -1,23 +1,30 @@
 import { supabase } from '@/lib/supabase'
 import RestaurantList from '@/components/RestaurantList'
+import type { RestaurantPhoto } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
-  const { data: restaurants } = await supabase
-    .from('restaurants')
-    .select('*')
-    .order('created_at', { ascending: false })
+  const [{ data: restaurants }, { data: allPhotos }] = await Promise.all([
+    supabase.from('restaurants').select('*').order('created_at', { ascending: false }),
+    supabase.from('restaurant_photos').select('*').order('position'),
+  ])
 
   const list = restaurants ?? []
   const cuisines = [...new Set(list.map((r: { cuisine: string }) => r.cuisine))].sort() as string[]
   const neighborhoods = [...new Set(list.map((r: { neighborhood: string | null }) => r.neighborhood).filter(Boolean))].sort() as string[]
 
+  const photosByRestaurant = (allPhotos ?? []).reduce((acc: Record<string, RestaurantPhoto[]>, p) => {
+    const photo = p as RestaurantPhoto
+    if (!acc[photo.restaurant_id]) acc[photo.restaurant_id] = []
+    acc[photo.restaurant_id].push(photo)
+    return acc
+  }, {})
+
   return (
     <div>
-      {/* Hero com círculos */}
+      {/* Hero */}
       <div className="relative overflow-hidden" style={{ background: 'var(--ink)' }}>
-        {/* Círculos decorativos */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute rounded-full opacity-60" style={{ width: 420, height: 420, background: 'var(--terra)', top: -120, right: -80 }} />
           <div className="absolute rounded-full opacity-40" style={{ width: 280, height: 280, background: 'var(--mustard)', top: 60, right: 180 }} />
@@ -25,7 +32,6 @@ export default async function HomePage() {
           <div className="absolute rounded-full opacity-20" style={{ width: 340, height: 340, background: 'var(--terra)', bottom: -100, left: -60 }} />
           <div className="absolute rounded-full opacity-30" style={{ width: 160, height: 160, background: 'var(--mustard)', top: 20, left: 200 }} />
         </div>
-
         <div className="relative max-w-5xl mx-auto px-5 sm:px-8 py-10 sm:py-14">
           <h1 className="font-display font-semibold leading-none text-white" style={{ fontSize: 'clamp(2.5rem, 7vw, 5rem)' }}>
             Lugares que<br />
@@ -39,7 +45,12 @@ export default async function HomePage() {
 
       {/* Lista */}
       <div className="max-w-5xl mx-auto px-5 sm:px-8 py-10">
-        <RestaurantList restaurants={list} cuisines={cuisines} neighborhoods={neighborhoods} />
+        <RestaurantList
+          restaurants={list}
+          cuisines={cuisines}
+          neighborhoods={neighborhoods}
+          photosByRestaurant={photosByRestaurant}
+        />
       </div>
     </div>
   )

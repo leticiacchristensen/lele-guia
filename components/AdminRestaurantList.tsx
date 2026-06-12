@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation'
 import StarRating from './StarRating'
 import PhotoManager from './PhotoManager'
 import TagSelector from './TagSelector'
+import AddressAutocomplete from './AddressAutocomplete'
+import type { PlaceResult } from './AddressAutocomplete'
 
 type Props = { restaurants: Restaurant[] }
 
@@ -69,6 +71,9 @@ export default function AdminRestaurantList({ restaurants }: Props) {
       my_review: editing.my_review,
       photo_url,
       tags: editing.tags ?? [],
+      place_id: editing.place_id ?? null,
+      lat: editing.lat ?? null,
+      lng: editing.lng ?? null,
     }).eq('id', editing.id)
     setSaving(false)
     setEditing(null)
@@ -138,10 +143,28 @@ export default function AdminRestaurantList({ restaurants }: Props) {
                     style={{ border: '1px solid var(--border)', background: 'var(--cream-dark)' }} />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium uppercase tracking-wide mb-1" style={{ color: 'var(--muted)' }}>Endereço</label>
-                  <input value={editing.address} onChange={e => setEditing({ ...editing, address: e.target.value })}
-                    className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
-                    style={{ border: '1px solid var(--border)', background: 'var(--cream-dark)' }} />
+                  <label className="block text-xs font-medium uppercase tracking-wide mb-1" style={{ color: 'var(--muted)' }}>
+                    Endereço
+                    {!editing.place_id && <span className="ml-1 text-xs normal-case font-normal" style={{ color: 'var(--border)' }}>— digite para buscar no Google</span>}
+                  </label>
+                  <AddressAutocomplete
+                    value={editing.address}
+                    onChange={(v) => setEditing({ ...editing, address: v })}
+                    onPlaceSelect={(p: PlaceResult) => setEditing({
+                      ...editing,
+                      address: p.address,
+                      neighborhood: p.neighborhood || editing.neighborhood,
+                      place_id: p.place_id,
+                      lat: p.lat,
+                      lng: p.lng,
+                    })}
+                    inputClassName="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
+                    inputStyle={{ border: '1px solid var(--border)', background: 'var(--cream-dark)' }}
+                    placeholder="Endereço do restaurante"
+                  />
+                  {editing.place_id && (
+                    <p className="mt-0.5 text-xs" style={{ color: 'var(--mustard)' }}>✓ Vinculado ao Google Maps</p>
+                  )}
                 </div>
               </div>
 

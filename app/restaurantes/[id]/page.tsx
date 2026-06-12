@@ -14,6 +14,20 @@ const priceLabel: Record<string, string> = {
   '$': 'Econômico', '$$': 'Moderado', '$$$': 'Sofisticado', '$$$$': 'Premium',
 }
 
+async function fetchGooglePhotos(placeId: string): Promise<{ url: string; fromGoogle: true }[]> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+    const res = await fetch(`${baseUrl}/api/place-photos?place_id=${placeId}`, { next: { revalidate: 86400 } })
+    const data = await res.json()
+    return (data.refs ?? []).map((ref: string) => ({
+      url: `${baseUrl}/api/place-photo?ref=${encodeURIComponent(ref)}`,
+      fromGoogle: true as const,
+    }))
+  } catch {
+    return []
+  }
+}
+
 export default async function RestaurantPage({ params }: Props) {
   const { id } = await params
 
@@ -22,12 +36,24 @@ export default async function RestaurantPage({ params }: Props) {
 
   if (!restaurant) notFound()
 
-  const [{ data: reviews }, { data: photos }] = await Promise.all([
+  const [{ data: reviews }, { data: uploadedPhotos }] = await Promise.all([
     supabase.from('reviews').select('*').eq('restaurant_id', id).order('created_at', { ascending: false }),
     supabase.from('restaurant_photos').select('*').eq('restaurant_id', id).order('position'),
   ])
 
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.address)}`
+  const myPhotos = (uploadedPhotos ?? []) as RestaurantPhoto[]
+  let allPhotos: ({ url: string } & ({ fromGoogle: true } | { id: string; restaurant_id: string; position: number; created_at: string }))[] = myPhotos
+  let hasGooglePhotos = false
+
+  if (myPhotos.length === 0 && restaurant.place_id) {
+    const googlePhotos = await fetchGooglePhotos(restaurant.place_id)
+    allPhotos = googlePhotos
+    hasGooglePhotos = googlePhotos.length > 0
+  }
+
+  const mapsUrl = restaurant.place_id
+    ? `https://www.google.com/maps/place/?q=place_id:${restaurant.place_id}`
+    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.address)}`
 
   return (
     <div className="max-w-3xl mx-auto px-5 sm:px-8 py-10">
@@ -36,7 +62,11 @@ export default async function RestaurantPage({ params }: Props) {
         ← Todos os restaurantes
       </Link>
 
-      <PhotoCarousel photos={(photos ?? []) as RestaurantPhoto[]} name={restaurant.name} />
+      <PhotoCarousel
+        photos={allPhotos as Parameters<typeof PhotoCarousel>[0]['photos']}
+        name={restaurant.name}
+        hasGooglePhotos={hasGooglePhotos}
+      />
 
       <div className="mb-8">
         <div className="flex items-start justify-between gap-4">

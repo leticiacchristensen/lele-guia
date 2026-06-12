@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import type { Restaurant } from '@/lib/supabase'
+import type { Restaurant, RestaurantPhoto } from '@/lib/supabase'
 import RestaurantCard from './RestaurantCard'
 import { ALL_TAGS } from './TagSelector'
 
@@ -9,6 +9,7 @@ type Props = {
   restaurants: Restaurant[]
   cuisines: string[]
   neighborhoods: string[]
+  photosByRestaurant: Record<string, RestaurantPhoto[]>
 }
 
 const PRICE_ORDER: Record<string, number> = { '$': 1, '$$': 2, '$$$': 3, '$$$$': 4 }
@@ -41,7 +42,7 @@ function Chip({ label, active, onClick, color = 'default' }: ChipProps) {
   )
 }
 
-export default function RestaurantList({ restaurants, cuisines, neighborhoods }: Props) {
+export default function RestaurantList({ restaurants, cuisines, neighborhoods, photosByRestaurant }: Props) {
   const [search, setSearch] = useState('')
   const [cuisine, setCuisine] = useState<string | null>(null)
   const [neighborhood, setNeighborhood] = useState<string | null>(null)
@@ -177,7 +178,7 @@ export default function RestaurantList({ restaurants, cuisines, neighborhoods }:
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map((r) => (
-            <RestaurantCard key={r.id} restaurant={r} />
+            <RestaurantCard key={r.id} restaurant={r} photos={photosByRestaurant[r.id] ?? []} />
           ))}
         </div>
       )}
