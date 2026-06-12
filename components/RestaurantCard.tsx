@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import type { Restaurant, RestaurantPhoto } from '@/lib/supabase'
 
 type Props = {
@@ -31,6 +31,7 @@ function Stars({ value }: { value: number }) {
 
 export default function RestaurantCard({ restaurant, photos }: Props) {
   const [current, setCurrent] = useState(0)
+  const touchStartX = useRef<number | null>(null)
 
   const allPhotos = photos.length > 0
     ? photos
@@ -47,6 +48,19 @@ export default function RestaurantCard({ restaurant, photos }: Props) {
     setCurrent((c) => (c + 1) % allPhotos.length)
   }
 
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+  }
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return
+    const diff = touchStartX.current - e.changedTouches[0].clientX
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) setCurrent((c) => (c + 1) % allPhotos.length)
+      else setCurrent((c) => (c - 1 + allPhotos.length) % allPhotos.length)
+    }
+    touchStartX.current = null
+  }
+
   return (
     <Link
       href={`/restaurantes/${restaurant.id}`}
@@ -54,7 +68,8 @@ export default function RestaurantCard({ restaurant, photos }: Props) {
       style={{ background: 'white', border: '1.5px solid var(--border)', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
     >
       {/* Foto com carrossel */}
-      <div className="relative w-full overflow-hidden" style={{ aspectRatio: '4/3', background: 'var(--cream-dark)' }}>
+      <div className="relative w-full overflow-hidden" style={{ aspectRatio: '4/3', background: 'var(--cream-dark)' }}
+        onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         {allPhotos.length > 0 ? (
           <Image
             src={allPhotos[current].url}
@@ -72,12 +87,12 @@ export default function RestaurantCard({ restaurant, photos }: Props) {
         {allPhotos.length > 1 && (
           <>
             <button onClick={prev}
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold transition-all opacity-0 group-hover:opacity-100"
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold"
               style={{ background: 'rgba(255,255,255,0.9)', color: 'var(--ink)', boxShadow: '0 1px 4px rgba(0,0,0,0.2)' }}>
               ‹
             </button>
             <button onClick={next}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold transition-all opacity-0 group-hover:opacity-100"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold"
               style={{ background: 'rgba(255,255,255,0.9)', color: 'var(--ink)', boxShadow: '0 1px 4px rgba(0,0,0,0.2)' }}>
               ›
             </button>
