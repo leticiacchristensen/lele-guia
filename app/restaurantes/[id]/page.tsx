@@ -16,11 +16,16 @@ const priceLabel: Record<string, string> = {
 
 async function fetchGooglePhotos(placeId: string): Promise<{ url: string; fromGoogle: true }[]> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-    const res = await fetch(`${baseUrl}/api/place-photos?place_id=${placeId}`, { next: { revalidate: 86400 } })
+    const key = process.env.GOOGLE_MAPS_KEY
+    if (!key) return []
+    const res = await fetch(
+      `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=photos&key=${key}`,
+      { next: { revalidate: 86400 } }
+    )
     const data = await res.json()
-    return (data.refs ?? []).map((ref: string) => ({
-      url: `${baseUrl}/api/place-photo?ref=${encodeURIComponent(ref)}`,
+    const refs: string[] = (data.result?.photos ?? []).slice(0, 6).map((p: { photo_reference: string }) => p.photo_reference)
+    return refs.map((ref) => ({
+      url: `/api/place-photo?ref=${encodeURIComponent(ref)}`,
       fromGoogle: true as const,
     }))
   } catch {
