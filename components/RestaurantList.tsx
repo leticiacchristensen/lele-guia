@@ -74,11 +74,11 @@ export default function RestaurantList({ restaurants, cuisines, neighborhoods, p
 
   return (
     <div>
-      {/* Linha principal: busca + ordenação */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-5">
+      {/* Busca + ordenação na mesma linha */}
+      <div className="flex gap-2 mb-4">
         <input
           type="text"
-          placeholder="Buscar restaurante..."
+          placeholder="Buscar..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1 focus:outline-none"
@@ -89,62 +89,54 @@ export default function RestaurantList({ restaurants, cuisines, neighborhoods, p
           }}
         />
         <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)} style={selectStyle}>
-          <option value="recent">Mais recentes</option>
-          <option value="rating_desc">Melhor avaliação</option>
-          <option value="rating_asc">Menor avaliação</option>
+          <option value="recent">Recentes</option>
+          <option value="rating_desc">Melhor nota</option>
+          <option value="rating_asc">Menor nota</option>
           <option value="price_asc">Menor preço</option>
           <option value="price_desc">Maior preço</option>
         </select>
       </div>
 
-      {/* Linha de filtros — dropdowns */}
-      <div className="flex flex-wrap gap-2 mb-8 pb-6" style={{ borderBottom: '1px solid var(--border)' }}>
-        {cuisines.length > 0 && (
-          <select value={cuisine} onChange={(e) => setCuisine(e.target.value)} style={activeSelectStyle(!!cuisine)}>
-            <option value="">Culinária</option>
-            {cuisines.map((c) => <option key={c} value={c}>{c}</option>)}
+      {/* Filtros — scroll horizontal no mobile */}
+      <div className="mb-8 pb-6" style={{ borderBottom: '1px solid var(--border)' }}>
+        <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          {cuisines.length > 0 && (
+            <select value={cuisine} onChange={(e) => setCuisine(e.target.value)} style={{ ...activeSelectStyle(!!cuisine), flexShrink: 0 }}>
+              <option value="">Culinária</option>
+              {cuisines.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          )}
+          {neighborhoods.length > 0 && (
+            <select value={neighborhood} onChange={(e) => setNeighborhood(e.target.value)} style={{ ...activeSelectStyle(!!neighborhood), flexShrink: 0 }}>
+              <option value="">Bairro</option>
+              {neighborhoods.map((n) => <option key={n} value={n}>{n}</option>)}
+            </select>
+          )}
+          <select value={tag} onChange={(e) => setTag(e.target.value)} style={{ ...activeSelectStyle(!!tag), flexShrink: 0 }}>
+            <option value="">Ocasião</option>
+            {ALL_TAGS.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
-        )}
-
-        {neighborhoods.length > 0 && (
-          <select value={neighborhood} onChange={(e) => setNeighborhood(e.target.value)} style={activeSelectStyle(!!neighborhood)}>
-            <option value="">Bairro</option>
-            {neighborhoods.map((n) => <option key={n} value={n}>{n}</option>)}
+          <select value={price} onChange={(e) => setPrice(e.target.value)} style={{ ...activeSelectStyle(!!price), flexShrink: 0 }}>
+            <option value="">Preço</option>
+            <option value="$">$ — Econômico</option>
+            <option value="$$">$$ — Moderado</option>
+            <option value="$$$">$$$ — Sofisticado</option>
+            <option value="$$$$">$$$$ — Premium</option>
           </select>
-        )}
-
-        <select value={tag} onChange={(e) => setTag(e.target.value)} style={activeSelectStyle(!!tag)}>
-          <option value="">Ocasião</option>
-          {ALL_TAGS.map((t) => <option key={t} value={t}>{t}</option>)}
-        </select>
-
-        <select value={price} onChange={(e) => setPrice(e.target.value)} style={activeSelectStyle(!!price)}>
-          <option value="">Preço</option>
-          <option value="$">$ — Econômico</option>
-          <option value="$$">$$ — Moderado</option>
-          <option value="$$$">$$$ — Sofisticado</option>
-          <option value="$$$$">$$$$ — Premium</option>
-        </select>
-
-        <select
-          value={minRating}
-          onChange={(e) => setMinRating(Number(e.target.value))}
-          style={activeSelectStyle(minRating > 0)}>
-          <option value={0}>Nota mínima</option>
-          <option value={1}>★ 1+</option>
-          <option value={2}>★★ 2+</option>
-          <option value={3}>★★★ 3+</option>
-          <option value={4}>★★★★ 4+</option>
-          <option value={5}>★★★★★ 5</option>
-        </select>
-
-        {hasFilters && (
-          <button onClick={clearFilters}
-            className="text-xs px-4 py-2 rounded-full transition-all"
-            style={{ border: '1.5px solid var(--terra)', color: 'var(--terra)', background: 'transparent' }}>
-            Limpar filtros ×
-          </button>
-        )}
+          <select value={minRating} onChange={(e) => setMinRating(Number(e.target.value))} style={{ ...activeSelectStyle(minRating > 0), flexShrink: 0 }}>
+            <option value={0}>Nota mín.</option>
+            <option value={1}>★ 1+</option>
+            <option value={2}>★★ 2+</option>
+            <option value={3}>★★★ 3+</option>
+            <option value={4}>★★★★ 4+</option>
+            <option value={5}>★★★★★ 5</option>
+          </select>
+          {hasFilters && (
+            <button onClick={clearFilters} style={{ ...activeSelectStyle(true), flexShrink: 0, borderColor: 'var(--terra)', color: 'var(--terra)', background: 'white', cursor: 'pointer' }}>
+              Limpar ×
+            </button>
+          )}
+        </div>
       </div>
 
       {filtered.length === 0 ? (
