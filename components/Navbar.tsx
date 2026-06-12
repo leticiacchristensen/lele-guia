@@ -24,6 +24,7 @@ export default function Navbar() {
 
   const links = [
     { href: '/', label: 'Restaurantes' },
+    { href: '/mapa', label: 'Mapa' },
     { href: '/sobre', label: 'Sobre' },
   ]
 
