@@ -4,6 +4,28 @@ import type { RestaurantPhoto } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
 
+async function fetchGooglePhotosForCard(placeId: string): Promise<RestaurantPhoto[]> {
+  try {
+    const key = process.env.GOOGLE_MAPS_KEY
+    if (!key) return []
+    const res = await fetch(
+      `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=photos&key=${key}`,
+      { next: { revalidate: 86400 } }
+    )
+    const data = await res.json()
+    const refs: string[] = (data.result?.photos ?? []).slice(0, 4).map((p: { photo_reference: string }) => p.photo_reference)
+    return refs.map((ref, i) => ({
+      id: `google-${i}`,
+      restaurant_id: '',
+      url: `/api/place-photo?ref=${encodeURIComponent(ref)}`,
+      position: i,
+      created_at: '',
+    }))
+  } catch {
+    return []
+  }
+}
+
 export default async function HomePage() {
   const [{ data: restaurants }, { data: allPhotos }] = await Promise.all([
     supabase.from('restaurants').select('*').order('created_at', { ascending: false }),
@@ -20,6 +42,23 @@ export default async function HomePage() {
     acc[photo.restaurant_id].push(photo)
     return acc
   }, {})
+
+  // Para restaurantes sem foto própria mas com place_id, busca fotos do Google
+  const needsGooglePhotos = list.filter(
+    (r: { id: string; place_id?: string | null }) => !photosByRestaurant[r.id]?.length && r.place_id
+  )
+
+  if (needsGooglePhotos.length > 0) {
+    const googleResults = await Promise.all(
+      needsGooglePhotos.map(async (r: { id: string; place_id?: string | null }) => ({
+        id: r.id,
+        photos: await fetchGooglePhotosForCard(r.place_id!),
+      }))
+    )
+    for (const { id, photos } of googleResults) {
+      if (photos.length > 0) photosByRestaurant[id] = photos
+    }
+  }
 
   return (
     <div>

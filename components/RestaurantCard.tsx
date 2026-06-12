@@ -61,6 +61,7 @@ export default function RestaurantCard({ restaurant, photos }: Props) {
             alt={restaurant.name}
             fill
             className="object-cover transition-opacity duration-300"
+            unoptimized={allPhotos[current].url.startsWith('/api/')}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center font-display text-5xl italic"
