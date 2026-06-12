@@ -148,8 +148,8 @@ export default function AdminRestaurantList({ restaurants }: Props) {
                     {!editing.place_id && <span className="ml-1 text-xs normal-case font-normal" style={{ color: 'var(--border)' }}>— digite para buscar no Google</span>}
                   </label>
                   <AddressAutocomplete
-                    value={editing.address}
-                    onChange={(v) => setEditing({ ...editing, address: v })}
+                    initialValue={editing.address}
+                    onInputChange={(v) => setEditing({ ...editing, address: v })}
                     onPlaceSelect={(p: PlaceResult) => setEditing({
                       ...editing,
                       address: p.address,

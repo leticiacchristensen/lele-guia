@@ -12,9 +12,9 @@ export type PlaceResult = {
 }
 
 type Props = {
-  value: string
-  onChange: (value: string) => void
+  initialValue?: string
   onPlaceSelect: (result: PlaceResult) => void
+  onInputChange?: (value: string) => void
   inputStyle?: React.CSSProperties
   inputClassName?: string
   placeholder?: string
@@ -29,7 +29,7 @@ declare global {
 }
 
 export default function AddressAutocomplete({
-  value, onChange, onPlaceSelect, inputStyle, inputClassName, placeholder,
+  initialValue, onPlaceSelect, onInputChange, inputStyle, inputClassName, placeholder,
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -83,13 +83,6 @@ export default function AddressAutocomplete({
         document.head.appendChild(s)
       }
     }
-
-    return () => {
-      if (autocompleteRef.current && window.google?.maps?.event) {
-        window.google.maps.event.clearInstanceListeners(autocompleteRef.current)
-        autocompleteRef.current = null
-      }
-    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -97,12 +90,12 @@ export default function AddressAutocomplete({
     <input
       ref={inputRef}
       type="text"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
+      defaultValue={initialValue ?? ''}
+      onChange={(e) => onInputChange?.(e.target.value)}
       placeholder={placeholder ?? 'Digite o nome do restaurante'}
       className={inputClassName}
       style={inputStyle}
-      autoComplete="off"
+      autoComplete="new-password"
     />
   )
 }

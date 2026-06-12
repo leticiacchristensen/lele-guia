@@ -98,8 +98,8 @@ export default function AddRestaurantForm() {
           <span className="ml-2 text-xs font-normal text-stone-400">— comece a digitar para buscar no Google</span>
         </label>
         <AddressAutocomplete
-          value={form.name}
-          onChange={(v) => set('name', v)}
+          initialValue={form.name}
+          onInputChange={(v) => set('name', v)}
           onPlaceSelect={handlePlaceSelect}
           placeholder="Ex: Outback, Eataly, Dom..."
           inputClassName={inputClass}
